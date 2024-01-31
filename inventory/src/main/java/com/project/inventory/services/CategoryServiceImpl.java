@@ -3,23 +3,20 @@ package com.project.inventory.services;
 import com.project.inventory.dao.ICategoryDao;
 import com.project.inventory.model.Category;
 import com.project.inventory.response.CategoryResponseREST;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CategoryServiceImpl implements ICategoryService {
 
-    private static final Logger log = LoggerFactory.getLogger(CategoryServiceImpl.class);
     @Autowired
     private ICategoryDao iCategoryDao;
 
@@ -91,36 +88,45 @@ public class CategoryServiceImpl implements ICategoryService {
         return new ResponseEntity<CategoryResponseREST>(categoryResponseREST, HttpStatus.OK);
     }
 
-    @Transactional
     @Override
+    @Transactional
     public ResponseEntity<CategoryResponseREST> update(Long id, Category updatedCategory) {
         CategoryResponseREST categoryResponseREST = new CategoryResponseREST();
-        List<Category> categoryList = new ArrayList<>();
 
         try {
-            Optional<Category> categoryOptional = iCategoryDao.findById(id);
-            if (categoryOptional.isPresent()) {
-                Category existingCategory = categoryOptional.get();
-                // Actualizar los campos del objeto existente con los valores del objeto actualizado
-                existingCategory.setName(updatedCategory.getName());
-                existingCategory.setDescription(updatedCategory.getDescription());
+            Optional<Category> searchResponse = iCategoryDao.findById(id);
 
-                // Guardar la actualización en la base de datos
-                Category categoryUpdated = iCategoryDao.save(existingCategory);
+            if (searchResponse.isPresent()) {
+                Category existingCategory = searchResponse.get();
 
-                categoryList.add(categoryUpdated);
-                categoryResponseREST.getCategoryResponse().setCategoryList(categoryList);
-                categoryResponseREST.setMetadata("Respuesta Ok", "200", "Se actualizó correctamente");
+                if (updatedCategory.getName() != null && !updatedCategory.getName().trim().isEmpty() &&
+                        updatedCategory.getDescription() != null && !updatedCategory.getDescription().trim().isEmpty()) {
+
+                    existingCategory.setName(updatedCategory.getName());
+                    existingCategory.setDescription(updatedCategory.getDescription());
+
+                    Category updatedCategoryEntity = iCategoryDao.save(existingCategory);
+
+                    categoryResponseREST.getCategoryResponse().setCategoryList(Collections.singletonList(updatedCategoryEntity));
+                    categoryResponseREST.setMetadata("Success", "200", "Categoría actualizada exitosamente");
+                    return new ResponseEntity<>(categoryResponseREST, HttpStatus.OK);
+
+                } else {
+                    // Al menos uno de los campos está vacío
+                    categoryResponseREST.setMetadata("Error", "400", "Los campos 'name' y 'description' no pueden estar vacíos");
+                    return new ResponseEntity<>(categoryResponseREST, HttpStatus.BAD_REQUEST);
+                }
+
             } else {
-                categoryResponseREST.setMetadata("Error", "404", "Error: Categoría no encontrada");
+                categoryResponseREST.setMetadata("Error", "404", "Categoría no encontrada");
                 return new ResponseEntity<>(categoryResponseREST, HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
-            categoryResponseREST.setMetadata("Error", "500", "Error al actualizar categoría");
-            e.printStackTrace(); // Imprimir la traza del error
+            categoryResponseREST.setMetadata("Error", "500", "Hubo un error al actualizar la categoría");
+            e.printStackTrace();
             return new ResponseEntity<>(categoryResponseREST, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>(categoryResponseREST, HttpStatus.OK);
     }
+
 }
 

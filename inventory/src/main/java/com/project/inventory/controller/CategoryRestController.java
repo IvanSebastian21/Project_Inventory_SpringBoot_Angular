@@ -4,7 +4,6 @@ import com.project.inventory.model.Category;
 import com.project.inventory.response.CategoryResponseREST;
 import com.project.inventory.services.ICategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -33,36 +32,9 @@ public class CategoryRestController {
         return response;
     }
 
-//    @PutMapping("/categories/{id}")
-//    public ResponseEntity<CategoryResponseREST> save(@RequestBody Category category, @PathVariable Long id) {
-//        ResponseEntity<CategoryResponseREST> response = iCategoryService.save(category);
-//        return response;
-//    }
-
     @PutMapping("/categories/{id}")
-    public ResponseEntity<CategoryResponseREST> updateCategory(@PathVariable Long id, @RequestBody Category updatedCategory) {
-        try {
-            ResponseEntity<CategoryResponseREST> searchResponse = iCategoryService.searchById(id);
-
-            if (searchResponse.getStatusCode() == HttpStatus.OK) {
-                Category existingCategory = searchResponse.getBody().getCategoryResponse().getCategoryList().get(0);
-
-                existingCategory.setName(updatedCategory.getName());
-                existingCategory.setDescription(updatedCategory.getDescription());
-
-                ResponseEntity<CategoryResponseREST> updateResponse = iCategoryService.save(existingCategory);
-
-                return updateResponse;
-            } else {
-                CategoryResponseREST errorResponse = new CategoryResponseREST();
-                errorResponse.setMetadata("Error", "304", "Error: no se ha realizado ninguna modificación");
-                return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-            }
-        } catch (Exception e) {
-            CategoryResponseREST errorResponse = new CategoryResponseREST();
-            errorResponse.setMetadata("Error", "500", "Error en Respuesta");
-            return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+    public ResponseEntity<CategoryResponseREST> update(@RequestBody Category category, @PathVariable Long id) {
+        ResponseEntity<CategoryResponseREST> response = iCategoryService.update(id, category);
+        return response;
     }
-
 }
