@@ -128,5 +128,38 @@ public class CategoryServiceImpl implements ICategoryService {
         }
     }
 
+    @Override
+    @Transactional
+    public ResponseEntity<CategoryResponseREST> delete(Long id) {
+        CategoryResponseREST categoryResponseREST = new CategoryResponseREST();
+
+        try {
+            // Validar que el ID no sea nulo ni negativo
+            if (id != null && id > 0) {
+                Optional<Category> searchResponse = iCategoryDao.findById(id);
+
+                if (searchResponse.isPresent()) {
+                    // La categoría existe, proceder con la eliminación
+                    iCategoryDao.deleteById(id);
+
+                    categoryResponseREST.setMetadata("Success", "200", "Categoría eliminada exitosamente");
+                    return new ResponseEntity<>(categoryResponseREST, HttpStatus.OK);
+                } else {
+                    // La categoría no fue encontrada
+                    categoryResponseREST.setMetadata("Error", "404", "Categoría no encontrada");
+                    return new ResponseEntity<>(categoryResponseREST, HttpStatus.NOT_FOUND);
+                }
+
+            } else {
+                // El ID es nulo o negativo
+                categoryResponseREST.setMetadata("Error", "400", "El ID de la categoría no es válido");
+                return new ResponseEntity<>(categoryResponseREST, HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception e) {
+            categoryResponseREST.setMetadata("Error", "500", "Hubo un error al eliminar la categoría");
+            e.printStackTrace();
+            return new ResponseEntity<>(categoryResponseREST, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
 

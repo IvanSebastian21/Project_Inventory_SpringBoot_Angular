@@ -16,25 +16,25 @@ public class CategoryRestController {
 
     @GetMapping("/categories")
     public ResponseEntity<CategoryResponseREST> searchCategories() {
-        ResponseEntity<CategoryResponseREST> response = iCategoryService.search();
-        return response;
+        return iCategoryService.search();
     }
 
     @GetMapping("/categories/{id}")
     public ResponseEntity<CategoryResponseREST> searchCategoryById(@PathVariable Long id) {
-        ResponseEntity<CategoryResponseREST> response = iCategoryService.searchById(id);
-        return response;
+        return iCategoryService.searchById(id);
     }
 
     @PostMapping("/categories")
     public ResponseEntity<CategoryResponseREST> save(@RequestBody Category category) {
-        ResponseEntity<CategoryResponseREST> response = iCategoryService.save(category);
-        return response;
+        return iCategoryService.save(category);
     }
 
     @PutMapping("/categories/{id}")
     public ResponseEntity<CategoryResponseREST> update(@RequestBody Category category, @PathVariable Long id) {
-        ResponseEntity<CategoryResponseREST> response = iCategoryService.update(id, category);
-        return response;
+        return iCategoryService.update(id, category);
+    }
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<CategoryResponseREST> update(@PathVariable Long id) {
+        return iCategoryService.delete(id);
     }
 }
